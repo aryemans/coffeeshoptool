@@ -24,24 +24,26 @@ st.markdown("""
         margin-top: 30px;
         margin-bottom: 10px;
     }
-    .data-check-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-        gap: 10px;
-        margin-top: 10px;
-    }
-    .data-check {
-        font-size:17px;
-        color: #333;
-        background-color: #fdf2ec;
-        padding: 0.5rem 0.8rem;
-        border-left: 4px solid #ec6f66;
-        border-radius: 6px;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-    }
     .highlight {
         color: #4a90e2;
         font-weight: bold;
+    }
+    .projected-box {
+        padding: 1rem;
+        border-left: 5px solid #f39c12;
+        border-radius: 8px;
+        font-size: 17px;
+        background-color: transparent;
+        color: #ffffff;
+        line-height: 1.6;
+    }
+    .metric-change {
+        font-weight: bold;
+        color: #2ecc71;
+    }
+    .metric-fall {
+        font-weight: bold;
+        color: #e74c3c;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -240,6 +242,34 @@ def show_loading_screen():
             time.sleep(0.3)
         st.success("All data sources analyzed!")
 
+def render_forecast_section(predicted_sales, yesterday_sales, weekly_avg):
+    forecast_delta_day = round(predicted_sales - yesterday_sales, 2)
+    forecast_delta_week = round(predicted_sales - weekly_avg, 2)
+
+    delta_day_style = "metric-change" if forecast_delta_day >= 0 else "metric-fall"
+    delta_week_style = "metric-change" if forecast_delta_week >= 0 else "metric-fall"
+
+    st.markdown("<div class='section-title'>🔮 Forecast: Tomorrow's Sales Projection</div>", unsafe_allow_html=True)
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Predicted Sales", f"${predicted_sales:.2f}")
+    col2.metric("Yesterday's Sales", f"${yesterday_sales:.2f}", f"{forecast_delta_day:+.2f}")
+    col3.metric("Weekly Avg", f"${weekly_avg:.2f}", f"{forecast_delta_week:+.2f}")
+
+    st.markdown(
+        f"""
+        <div class='projected-box'>
+        This forecast is based on several factors: ☀️ Clear skies, increased search interest for 'coffee near me',<br>
+        and two major local events tomorrow: the <strong>Atlanta BeltLine Lantern Parade</strong> and <strong>Chomp & Stomp Chili Cook-Off</strong>. <br>
+        These should boost both foot traffic and impulse visits throughout the day.
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+
+
+
+
 # --- STREAMLIT UI ---
 st.title("☕ Smart Sales Insight Dashboard")
 
@@ -273,6 +303,5 @@ if st.button("📤 Send Square Data & Generate Insight"):
     st.markdown("<div class='section-title'>🧠 Insights on Foot Traffic and Google Data</div>", unsafe_allow_html=True)
     st.write("Google's live popularity score (currently 76/100) shows strong foot traffic around your shop. This, combined with steady search trends (95/100), suggests your location remains visible and frequented by potential customers.")
 
-    st.markdown("<div class='section-title'>🔮 Forecast: Tomorrow's Sales Prediction</div>", unsafe_allow_html=True)
     predicted_sales = predict_future_sales("clear", ["Ponce Night Market"], 0.91, 0.83)
-    st.write(f"If weather stays clear, and with events like the Ponce Night Market plus good keyword interest, your projected sales are around **${predicted_sales:.2f}**.")
+    render_forecast_section(predicted_sales, sales_today, weekly_avg)
