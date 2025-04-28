@@ -96,6 +96,14 @@ feature_corrs = {
     'TotalTraffic': 0.1  # Mock small positive correlation for traffic
 }
 
+# Show Correlation Table
+st.subheader("Feature Correlations with Sales")
+correlation_display = pd.DataFrame({
+    'Feature': ['Foot Traffic', 'Temperature', 'Traffic Volume'],
+    'Correlation with Sales': [round(feature_corrs['FootTraffic'], 2), round(feature_corrs['Temperature'], 2), round(feature_corrs['TotalTraffic'], 2)]
+})
+st.dataframe(correlation_display.style.background_gradient(cmap='coolwarm', subset=['Correlation with Sales']))
+
 # Future conditions
 future_conditions = pd.DataFrame({
     'Date': pd.date_range(start=latest_day + timedelta(days=1), periods=3),
